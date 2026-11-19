@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Orbital Dynamics Lab</title>
+<style>
+:root{--bg:#080d19;--panel:#111c30;--panel2:#17243b;--line:#263852;--text:#e8f0ff;--muted:#91a4c2;--cyan:#38bdf8;--orange:#f59e0b;--purple:#a78bfa;--green:#34d399;--red:#fb7185}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -20%,#1a3152 0,#080d19 58%);color:var(--text);font:14px/1.5 Inter,ui-sans-serif,system-ui,Segoe UI,sans-serif}
+header{padding:22px clamp(16px,3vw,42px) 14px;border-bottom:1px solid #263852;background:#080d19d9;position:sticky;top:0;z-index:5;backdrop-filter:blur(14px)}
+.brand{display:flex;align-items:center;gap:12px}.logo{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,var(--cyan),var(--purple));display:grid;place-items:center;color:#06101f;font-weight:900;font-size:20px;box-shadow:0 0 25px #38bdf855}
+h1{font-size:18px;letter-spacing:.12em;margin:0}.sub{color:var(--muted);font-size:10px;letter-spacing:.2em}
+.headerrow{display:flex;justify-content:space-between;align-items:center;gap:15px}.status{color:var(--green);font-size:11px;letter-spacing:.12em}
+main{max-width:1600px;margin:auto;padding:22px clamp(14px,2.5vw,36px) 60px}
+.topgrid{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(300px,.9fr);gap:16px}
+.panel{background:linear-gradient(145deg,#142139ed,#0e1829f2);border:1px solid var(--line);border-radius:16px;box-shadow:0 14px 45px #0003;overflow:hidden}
+.panelhead{padding:15px 18px;border-bottom:1px solid #263852;display:flex;justify-content:space-between;align-items:center;gap:10px}
+h2{font-size:12px;letter-spacing:.15em;text-transform:uppercase;margin:0;color:#dce8ff}.eyebrow{font-size:10px;color:var(--muted);letter-spacing:.13em}
+.canvaswrap{position:relative;background:radial-gradient(ellipse at 48% 45%,#10223b 0,#07101f 65%);min-height:490px}
+canvas{display:block;width:100%;height:490px;cursor:crosshair}.legend{display:flex;gap:14px;flex-wrap:wrap;padding:11px 18px;color:var(--muted);font-size:11px}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+.toolbar{display:flex;gap:7px;flex-wrap:wrap}.btn,select,input{font:inherit;color:var(--text);background:#101d31;border:1px solid #30435f;border-radius:8px;padding:8px 10px}
+.btn{cursor:pointer;font-size:11px;letter-spacing:.06em;transition:.2s}.btn:hover{border-color:var(--cyan);background:#19304a}.btn.primary{background:linear-gradient(100deg,#0e7490,#2563eb);border:0;color:white}.btn.active{border-color:var(--green);color:var(--green)}
+.metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;padding:14px}
+.metric{background:#0b1526;border:1px solid #21334d;border-radius:11px;padding:12px;min-width:0}.metric label{display:block;color:var(--muted);font-size:10px;letter-spacing:.12em;text-transform:uppercase}.metric strong{display:block;font-size:17px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}.metric small{color:var(--muted);font-size:10px}
+.metric.cyan strong{color:var(--cyan)}.metric.orange strong{color:var(--orange)}.metric.purple strong{color:var(--purple)}.metric.green strong{color:var(--green)}
+.section{margin-top:16px}.sectiongrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.controls{padding:16px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.field label{display:flex;justify-content:space-between;color:var(--muted);font-size:11px;margin-bottom:6px}.field input[type=number]{width:100%}.field input[type=range]{width:100%;accent-color:var(--cyan);padding:0;background:transparent;border:0}
+.presetrow{display:flex;flex-wrap:wrap;gap:7px;padding:14px}.note{padding:0 16px 16px;color:var(--muted);font-size:11px}
+.tabs{display:flex;gap:6px;padding:12px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}.tab{background:transparent;border:1px solid transparent;color:var(--muted);padding:7px 11px;border-radius:7px;cursor:pointer;font-size:11px}.tab.active{color:var(--cyan);border-color:#25617d;background:#0d263a}
+.content{padding:17px;min-height:150px}.equation{font-family:ui-monospace,monospace;color:#c4b5fd;background:#0a1424;border:1px solid #293953;border-radius:9px;padding:12px;margin:10px 0;overflow:auto}
+.chartbox{height:190px;padding:8px 14px 14px}.chartbox canvas{height:170px}.toggle{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:11px}.toggle input{accent-color:var(--cyan)}
+.footer{color:#7185a5;text-align:center;font-size:10px;margin:24px}
+@media(max-width:950px){.topgrid{grid-template-columns:1fr}.sectiongrid{grid-template-columns:1fr 1fr}}
+@media(max-width:620px){.sectiongrid{grid-template-columns:1fr}.controls{grid-template-columns:1fr}.canvaswrap{min-height:360px}canvas{height:360px}.headerrow{align-items:flex-start}.status{display:none}}
+</style></head>
+<body>
+<header><div class="headerrow"><div class="brand"><div class="logo">Ω</div><div><h1>ORBITAL DYNAMICS LAB</h1><div class="sub">NEWTONIAN TWO-BODY SIMULATION · FLIGHT DYNAMICS DIVISION</div></div></div><div class="status">● SIMULATION ENGINE ONLINE</div></div></header>
+<main>
+<div class="topgrid">
+<section class="panel">
+ <div class="panelhead"><div><h2>Orbital Visualization</h2><div class="eyebrow">INERTIAL FRAME · LIVE PROPAGATION</div></div><div class="toolbar"><button class="btn primary" id="play">Ⅱ PAUSE</button><button class="btn" id="step">STEP +</button><button class="btn" id="reset">RESET</button><button class="btn" id="clear">CLEAR TRAILS</button></div></div>
+ <div class="canvaswrap"><canvas id="space"></canvas></div>
+ <div class="legend"><span><i class="dot" style="background:#38bdf8"></i>BODY 1</span><span><i class="dot" style="background:#f59e0b"></i>BODY 2</span><span><i class="dot" style="background:#a78bfa"></i>TRAJECTORY</span><span><i class="dot" style="background:#34d399"></i>BARYCENTER</span><span><i class="dot" style="background:#fb7185"></i>FORCE</span><label class="toggle"><input type="checkbox" id="showVectors" checked>Vectors</label><label class="toggle"><input type="checkbox" id="showGrid" checked>Grid</label></div>
+</section>
+<aside class="panel"><div class="panelhead"><div><h2>Live Telemetry</h2><div class="eyebrow">INSTANTANEOUS STATE VECTOR</div></div><span class="eyebrow" id="clock">T+ 0.0 s</span></div>
+ <div class="metrics">
+  <div class="metric cyan"><label>Separation</label><strong id="distance">—</strong><small>m</small></div>
+  <div class="metric orange"><label>Relative speed</label><strong id="speed">—</strong><small>m/s</small></div>
+  <div class="metric"><label>Gravitational force</label><strong id="force">—</strong><small>N</small></div>
+  <div class="metric"><label>CM position</label><strong id="cm">—</strong><small>m · x, y</small></div>
+  <div class="metric purple"><label>Specific energy</label><strong id="energy">—</strong><small>J/kg</small></div>
+  <div class="metric purple"><label>Eccentricity</label><strong id="ecc">—</strong><small>dimensionless</small></div>
+  <div class="metric green"><label>Total mechanical energy</label><strong id="totalE">—</strong><small>J</small></div>
+  <div class="metric green"><label>Angular momentum</label><strong id="angmom">—</strong><small>kg·m²/s</small></div>
+ </div>
+ <div class="note" id="classification">Bound orbit · closed conic section</div>
+</aside></div>
+
+<div class="section sectiongrid">
+<section class="panel"><div class="panelhead"><div><h2>Mission Presets</h2><div class="eyebrow">INITIAL CONDITION LIBRARY</div></div></div>
+<div class="presetrow">
+<button class="btn active" data-preset="earth">Sun · Earth</button><button class="btn" data-preset="moon">Earth · Moon</button><button class="btn" data-preset="binary">Binary stars</button><button class="btn" data-preset="equal">Equal mass</button><button class="btn" data-preset="circular">Circular</button><button class="btn" data-preset="elliptical">Elliptical</button><button class="btn" data-preset="parabolic">Parabolic</button><button class="btn" data-preset="hyperbolic">Hyperbolic</button>
+</div><div class="note">Presets use approximate idealized initial conditions, not live ephemerides. The Sun–Earth and Earth–Moon examples are scaled Newtonian models.</div></section>
+<section class="panel"><div class="panelhead"><div><h2>Integrator & Propagation</h2><div class="eyebrow">NUMERICAL CONFIGURATION</div></div></div>
+<div class="controls">
+<div class="field"><label>Integrator</label><select id="integrator"><option value="verlet">Velocity Verlet</option><option value="rk4">Runge–Kutta 4</option></select></div>
+<div class="field"><label>Time step Δt <b id="dtv">60 s</b></label><input id="dt" type="range" min="-2" max="5" step=".1" value="1.778"></div>
+<div class="field"><label>Simulation speed <b id="speedv">1×</b></label><input id="simSpeed" type="range" min=".1" max="20" step=".1" value="1"></div>
+<div class="field"><label>View scale <b id="scalev">1×</b></label><input id="scale" type="range" min=".2" max="4" step=".1" value="1"></div>
+</div><div class="note">Velocity Verlet is symplectic and typically maintains bounded energy error over long integrations. RK4 is a high-order non-symplectic method.</div></section>
+<section class="panel"><div class="panelhead"><div><h2>Conservation Monitor</h2><div class="eyebrow">RELATIVE DRIFT FROM INITIAL STATE</div></div></div>
+<div class="metrics">
+<div class="metric green"><label>Energy drift</label><strong id="drift">0.000%</strong><small>ΔE / |E₀|</small></div>
+<div class="metric"><label>Momentum magnitude</label><strong id="momentum">—</strong><small>kg·m/s</small></div>
+<div class="metric"><label>Orbital period</label><strong id="period">—</strong><small>s · bound orbit only</small></div>
+<div class="metric"><label>Semi-major axis</label><strong id="axis">—</strong><small>m · bound orbit only</small></div>
+</div><div class="note">In an isolated two-body system, total linear momentum, angular momentum and mechanical energy are conserved analytically. Numerical drift depends on step size and integrator.</div></section>
+</div>
+
+<div class="section sectiongrid">
+<section class="panel"><div class="panelhead"><div><h2>Physical Parameters</h2><div class="eyebrow">EDIT THE ACTUAL DYNAMICAL MODEL</div></div></div>
+<div class="controls">
+<div class="field"><label>Mass m₁ (kg)</label><input type="number" id="m1" value="1.989e30"></div>
+<div class="field"><label>Mass m₂ (kg)</label><input type="number" id="m2" value="5.972e24"></div>
+<div class="field"><label>Initial separation (m)</label><input type="number" id="r0" value="1.496e11"></div>
+<div class="field"><label>Tangential relative speed (m/s)</label><input type="number" id="v0" value="29784.7"></div>
+<div class="field"><label>Gravitational constant G</label><input type="number" id="grav" value="6.67430e-11"></div>
+<div class="field"><label>Apply changes</label><button class="btn primary" id="apply">REINITIALIZE SYSTEM</button></div>
+</div><div class="note">Initial setup places the bodies on the x-axis with barycentric velocities perpendicular to the separation vector. Changing parameters reinitializes the orbit.</div></section>
+<section class="panel"><div class="panelhead"><div><h2>Conic Section Lab</h2><div class="eyebrow">CHANGE SPEED TO CHANGE THE ORBIT</div></div></div>
+<div class="content"><p>For relative separation <b>r</b> and relative velocity <b>v</b>, specific orbital energy determines whether the orbit is bound or unbound.</p>
+<div class="equation">ε = v²/2 − μ/r&nbsp;&nbsp; ; &nbsp; μ = G(m₁ + m₂)</div>
+<div class="equation">v<sub>circular</sub> = √(μ/r)&nbsp;&nbsp; ; &nbsp; v<sub>escape</sub> = √(2μ/r)</div>
+<p style="color:var(--muted);font-size:11px">ε &lt; 0: ellipse (circle is e = 0) · ε = 0: parabola · ε &gt; 0: hyperbola. For the same initial radius, the preset buttons initialize these regimes.</p></div></section>
+<section class="panel"><div class="panelhead"><div><h2>Physics Primer</h2><div class="eyebrow">THE MODEL UNDER THE HOOD</div></div></div>
+<div class="content"><div class="equation">a₁ = Gm₂ (r₂−r₁) / |r₂−r₁|³</div><div class="equation">a₂ = −Gm₁ (r₂−r₁) / |r₂−r₁|³</div><div class="equation">r¨ = −G(m₁+m₂) r / |r|³</div><p>Both bodies accelerate toward each other. Their center of mass moves uniformly because internal gravitational forces cancel in pairs (Newton’s third law).</p><p>The barycenter is R<sub>CM</sub> = (m₁r₁ + m₂r₂)/(m₁+m₂).</p></div></section>
+</div>
+<div class="section panel"><div class="panelhead"><div><h2>Simulation History</h2><div class="eyebrow">ENERGY AND MOMENTUM TRACKING · LAST 120 SAMPLES</div></div></div>
+<div class="tabs"><button class="tab active" data-chart="energy">Total energy</button><button class="tab" data-chart="kinetic">Kinetic energy</button><button class="tab" data-chart="potential">Potential energy</button><button class="tab" data-chart="angular">Angular momentum</button></div><div class="chartbox"><canvas id="chart"></canvas></div></div>
+<div class="footer">ORBITAL DYNAMICS LAB · IDEAL NEWTONIAN POINT-MASS MODEL · SI UNITS</div>
+</main>
+<script>
+const $=id=>document.getElementById(id), G0=6.67430e-11;
+let state, initial, t=0, running=true, trails=[[],[]], history=[], last=0, frame=0, chartMode='energy';
+let params={m1:1.989e30,m2:5.972e24,G:G0,dt:60,simSpeed:1,scale:1};
+const presets={
+earth:[1.989e30,5.972e24,1.496e11,29784.7],
+moon:[5.972e24,7.342e22,3.844e8,1022],
+binary:[1.5e30,1.2e30,2e11,Math.sqrt(G0*2.7e30/2e11)*.9],
+equal:[1e25,1e25,1e8,Math.sqrt(G0*2e25/1e8)],
+circular:[1e25,1e20,1e8,Math.sqrt(G0*(1e25+1e20)/1e8)],
+elliptical:[1e25,1e20,1e8,Math.sqrt(G0*(1e25+1e20)/1e8)*.75],
+parabolic:[1e25,1e20,1e8,Math.sqrt(2*G0*(1e25+1e20)/1e8)],
+hyperbolic:[1e25,1e20,1e8,Math.sqrt(2*G0*(1e25+1e20)/1e8)*1.25]
+};
+const vec=(x,y)=>({x,y}), add=(a,b)=>vec(a.x+b.x,a.y+b.y), mul=(a,s)=>vec(a.x*s,a.y*s), sub=(a,b)=>vec(a.x-b.x,a.y-b.y), norm=a=>Math.hypot(a.x,a.y), cross=(a,b)=>a.x*b.y-a.y*b.x;
+function accel(s){let d=sub(s.r2,s.r1),r=norm(d);if(r<1)throw Error('Close approach: separation below 1 m');let k=params.G/(r*r*r);return [mul(d,k*params.m2),mul(d,-k*params.m1)]}
+function deriv(s){let [a1,a2]=accel(s);return {r1:s.v1,r2:s.v2,v1:a1,v2:a2}}
+function plus(s,d,h){return {r1:add(s.r1,mul(d.r1,h)),r2:add(s.r2,mul(d.r2,h)),v1:add(s.v1,mul(d.v1,h)),v2:add(s.v2,mul(d.v2,h))}}
+function rk4(s,h){let a=deriv(s),b=deriv(plus(s,a,h/2)),c=deriv(plus(s,b,h/2)),d=deriv(plus(s,c,h));let combine=(key)=>add(add(mul(a[key],h/6),mul(b[key],h/3)),add(mul(c[key],h/3),mul(d[key],h/6)));return {r1:add(s.r1,combine('r1')),r2:add(s.r2,combine('r2')),v1:add(s.v1,combine('v1')),v2:add(s.v2,combine('v2'))}}
+function verlet(s,h){let [a1,a2]=accel(s),r1=add(add(s.r1,mul(s.v1,h)),mul(a1,.5*h*h)),r2=add(add(s.r2,mul(s.v2,h)),mul(a2,.5*h*h));let mid={...s,r1,r2};let [b1,b2]=accel(mid);return {r1,r2,v1:add(s.v1,mul(add(a1,b1),h/2)),v2:add(s.v2,mul(add(a2,b2),h/2))}}
+function diagnostics(s){let r=sub(s.r2,s.r1),v=sub(s.v2,s.v1),R=norm(r),V=norm(v),mu=params.G*(params.m1+params.m2),eps=V*V/2-mu/R,L=params.m1*params.m2/(params.m1+params.m2)*cross(r,v),evec=sub(mul(vec(v.y,-v.x),L/(params.m1*params.m2/(params.m1+params.m2))),mul(r,mu/R)); // replaced below with robust eccentricity vector
+let h=cross(r,v), ev=sub(mul(vec(v.y*h,-v.x*h),1/mu),mul(r,1/R)),ecc=norm(ev);
+let kinetic=.5*params.m1*norm(s.v1)**2+.5*params.m2*norm(s.v2)**2,potential=-params.G*params.m1*params.m2/R,total=kinetic+potential;
+let cm=mul(add(mul(s.r1,params.m1),mul(s.r2,params.m2)),1/(params.m1+params.m2)),p=add(mul(s.v1,params.m1),mul(s.v2,params.m2));
+let a=eps<0?-mu/(2*eps):NaN,period=eps<0?2*Math.PI*Math.sqrt(a*a*a/mu):NaN;
+return {r,v,R,V,eps,ecc,L,kinetic,potential,total,cm,p,a,period,force:params.G*params.m1*params.m2/(R*R)}}
+function init(m1,m2,R,V,G=params.G){params={...params,m1,m2,G};let M=m1+m2, r1=vec(-m2/M*R,0),r2=vec(m1/M*R,0),v1=vec(0,-m2/M*V),v2=vec(0,m1/M*V);state={r1,r2,v1,v2};initial=diagnostics(state);t=0;trails=[[],[]];history=[];sample();running=true;$('play').textContent='Ⅱ PAUSE';draw();update()}
+function sample(){let d=diagnostics(state);history.push({t,E:d.total,K:d.kinetic,U:d.potential,L:d.L});if(history.length>120)history.shift()}
+function step(){let h=params.dt;try{state=$('integrator').value==='rk4'?rk4(state,h):verlet(state,h);t+=h;let d=diagnostics(state);trails[0].push({...state.r1});trails[1].push({...state.r2});if(trails[0].length>4000){trails[0].shift();trails[1].shift()}if(frame++%5===0)sample();update();}catch(e){running=false;$('play').textContent='▶ PLAY';$('classification').textContent='⚠ '+e.message;}}
+function fmt(x,n=3){if(!Number.isFinite(x))return '—';if(x===0)return '0';return x.toExponential(n)}
+function update(){let d=diagnostics(state);$('clock').textContent='T+ '+fmt(t,2)+' s';$('distance').textContent=fmt(d.R);$('speed').textContent=fmt(d.V);$('force').textContent=fmt(d.force);$('cm').textContent=fmt(d.cm.x,2)+', '+fmt(d.cm.y,2);$('energy').textContent=fmt(d.eps);$('ecc').textContent=d.ecc.toFixed(5);$('totalE').textContent=fmt(d.total);$('angmom').textContent=fmt(d.L);$('momentum').textContent=fmt(norm(d.p));$('period').textContent=fmt(d.period);$('axis').textContent=fmt(d.a);$('drift').textContent=(100*(d.total-initial.total)/Math.max(Math.abs(initial.total),1)).toExponential(2)+'%';let kind=d.eps< -Math.abs(d.eps)*1e-10?'BOUND · ELLIPTICAL':Math.abs(d.eps)<1e-8?'PARABOLIC · ESCAPE THRESHOLD':'UNBOUND · HYPERBOLIC';if(d.ecc<1e-3&&d.eps<0)kind='BOUND · NEAR-CIRCULAR';$('classification').textContent=kind+'  |  e = '+d.ecc.toFixed(5);draw();drawChart()}
+function draw(){let c=$('space'),ctx=c.getContext('2d'),w=c.clientWidth,h=c.clientHeight,ratio=devicePixelRatio||1;if(c.width!==w*ratio||c.height!==h*ratio){c.width=w*ratio;c.height=h*ratio}ctx.setTransform(ratio,0,0,ratio,0,0);ctx.clearRect(0,0,w,h);
+let d=diagnostics(state),center={x:w/2,y:h/2},scale=Math.min(w,h)*.38/Math.max(d.R,1)*params.scale; // dynamically frame separation
+let px=p=>({x:center.x+p.x*scale,y:center.y-p.y*scale});
+if($('showGrid').checked){ctx.strokeStyle='#1b2c44';ctx.lineWidth=1;for(let x=center.x%40;x<w;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke()}for(let y=center.y%40;y<h;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke()}ctx.strokeStyle='#425673';ctx.beginPath();ctx.moveTo(0,center.y);ctx.lineTo(w,center.y);ctx.moveTo(center.x,0);ctx.lineTo(center.x,h);ctx.stroke()}
+function path(points,color){if(points.length<2)return;ctx.beginPath();points.forEach((p,i)=>{let q=px(p);i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y)});ctx.strokeStyle=color;ctx.lineWidth=1.6;ctx.globalAlpha=.8;ctx.stroke();ctx.globalAlpha=1}
+path(trails[0],'#38bdf8');path(trails[1],'#f59e0b');
+let p1=px(state.r1),p2=px(state.r2),pc=px(d.cm);
+ctx.setLineDash([4,5]);ctx.strokeStyle='#a78bfa';ctx.beginPath();ctx.moveTo(p1.x,p1.y);ctx.lineTo(p2.x,p2.y);ctx.stroke();ctx.setLineDash([]);
+ctx.fillStyle='#34d399';ctx.beginPath();ctx.arc(pc.x,pc.y,4,0,Math.PI*2);ctx.fill();ctx.fillStyle='#b8f7dc';ctx.font='10px system-ui';ctx.fillText('BARYCENTER',pc.x+8,pc.y-8);
+function body(p,color,mass){let rad=Math.max(5,Math.min(20,5+Math.log10(mass/1e20+1)*1.4));let g=ctx.createRadialGradient(p.x-rad*.3,p.y-rad*.35,1,p.x,p.y,rad*1.6);g.addColorStop(0,'#ffffff');g.addColorStop(.18,color);g.addColorStop(1,'#07101f');ctx.shadowBlur=22;ctx.shadowColor=color;ctx.fillStyle=g;ctx.beginPath();ctx.arc(p.x,p.y,rad,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0}
+body(p1,'#38bdf8',params.m1);body(p2,'#f59e0b',params.m2);
+if($('showVectors').checked){let [a1,a2]=accel(state);function arrow(p,v,color,factor){let len=Math.hypot(v.x,v.y);if(!len)return;let k=Math.min(70,Math.max(18,Math.log10(len+1)*7))*factor;let ex=p.x+v.x/len*k,ey=p.y-v.y/len*k;ctx.strokeStyle=color;ctx.fillStyle=color;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(ex,ey);ctx.stroke();let ang=Math.atan2(ey-p.y,ex-p.x);ctx.beginPath();ctx.moveTo(ex,ey);ctx.lineTo(ex-8*Math.cos(ang-.5),ey-8*Math.sin(ang-.5));ctx.lineTo(ex-8*Math.cos(ang+.5),ey-8*Math.sin(ang+.5));ctx.fill()}arrow(p1,state.v1,'#38bdf8',1);arrow(p2,state.v2,'#f59e0b',1);arrow(p1,a1,'#fb7185',.6);arrow(p2,a2,'#fb7185',.6)}
+ctx.fillStyle='#9bb0ce';ctx.font='10px ui-monospace';ctx.fillText('Relative separation: '+fmt(d.R)+' m',16,h-18);ctx.fillText('Scale adapts to current separation',16,20)}
+function drawChart(){let c=$('chart'),ctx=c.getContext('2d'),w=c.clientWidth,h=c.clientHeight,r=devicePixelRatio||1;if(c.width!==w*r||c.height!==h*r){c.width=w*r;c.height=h*r}ctx.setTransform(r,0,0,r,0,0);ctx.clearRect(0,0,w,h);if(history.length<2)return;let key={energy:'E',kinetic:'K',potential:'U',angular:'L'}[chartMode],vals=history.map(x=>x[key]),min=Math.min(...vals),max=Math.max(...vals);if(max===min){max+=1;min-=1}let pad=12;ctx.strokeStyle='#253853';ctx.beginPath();ctx.moveTo(pad,pad);ctx.lineTo(pad,h-pad);ctx.lineTo(w-pad,h-pad);ctx.stroke();ctx.beginPath();vals.forEach((v,i)=>{let x=pad+i/(vals.length-1)*(w-2*pad),y=h-pad-(v-min)/(max-min)*(h-2*pad);i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.strokeStyle=chartMode==='angular'?'#34d399':'#a78bfa';ctx.lineWidth=2;ctx.stroke();ctx.fillStyle='#91a4c2';ctx.font='10px ui-monospace';ctx.fillText('min '+fmt(min,2),pad+5,12);ctx.fillText('max '+fmt(max,2),w-105,12)}
+$('play').onclick=()=>{running=!running;$('play').textContent=running?'Ⅱ PAUSE':'▶ PLAY'};
+$('step').onclick=()=>{running=false;$('play').textContent='▶ PLAY';step()};
+$('reset').onclick=()=>{init(params.m1,params.m2,Number($('r0').value),Number($('v0').value),params.G)};
+$('clear').onclick=()=>{trails=[[],[]];draw()};
+$('apply').onclick=()=>{let m1=+$('m1').value,m2=+$('m2').value,R=+$('r0').value,V=+$('v0').value,G=+$('grav').value;if([m1,m2,R,V,G].some(x=>!Number.isFinite(x)||x<=0)){alert('All physical parameters must be positive finite numbers.');return}init(m1,m2,R,V,G)};
+$('dt').oninput=e=>{params.dt=Math.pow(10,+e.target.value);$('dtv').textContent=fmt(params.dt,2)+' s'};
+$('simSpeed').oninput=e=>{params.simSpeed=+e.target.value;$('speedv').textContent=params.simSpeed.toFixed(1)+'×'};
+$('scale').oninput=e=>{params.scale=+e.target.value;$('scalev').textContent=params.scale.toFixed(1)+'×';draw()};
+$('showVectors').onchange=draw;$('showGrid').onchange=draw;
+document.querySelectorAll('[data-preset]').forEach(b=>b.onclick=()=>{let [m1,m2,R,V]=presets[b.dataset.preset];$('m1').value=m1;$('m2').value=m2;$('r0').value=R;$('v0').value=V;$('grav').value=G0;document.querySelectorAll('[data-preset]').forEach(x=>x.classList.toggle('active',x===b));$('apply').click()});
+document.querySelectorAll('[data-chart]').forEach(b=>b.onclick=()=>{chartMode=b.dataset.chart;document.querySelectorAll('[data-chart]').forEach(x=>x.classList.toggle('active',x===b));drawChart()});
+function loop(now){if(running){let elapsed=Math.min((now-last)/1000||0,.08);let steps=Math.max(1,Math.min(100,Math.ceil(elapsed*params.simSpeed*60)));for(let i=0;i<steps;i++)step()}last=now;requestAnimationFrame(loop)}
+init(params.m1,params.m2,1.496e11,29784.7);$('dt').dispatchEvent(new Event('input'));requestAnimationFrame(loop);
+window.addEventListener('resize',()=>{draw();drawChart()});
+</script></body></html>
