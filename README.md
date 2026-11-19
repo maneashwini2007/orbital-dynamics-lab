@@ -1,5 +1,5 @@
 # Orbital Dynamics Lab
-
+[🚀 Launch Interactive Simulation](https://maneashwini2007.github.io/orbital-dynamics-lab/)
 A self-contained interactive Newtonian two-body simulator.
 
 ## Run
